@@ -1,0 +1,103 @@
+---
+title: "Exploring the Confusing Partnership of Japan's LDP and Komeito"
+author: "Underland, Jake"
+date: "2022-07-15"
+output:
+  pdf_document: 
+    latex_engine: pdflatex
+    toc: yes
+    keep_tex: yes
+  html_document:
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  word_document:
+    toc: yes
+    toc_depth: '3'
+bibliography: references.bib
+header_includes:
+  - \usepackage{graphicx}
+  - \usepackage[x11names]{xcolor}
+  - \usepackage{copyrightbox}
+  - \usepackage{url}
+  - \usepackage[labelformat=empty]{caption}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, include = T, warning = FALSE, error = F, message = F)
+```
+```{r}
+library(data.table)
+library(tidyverse)
+```
+
+# Introduction  
+
+In conventional political theory, winning parties form coalitions when they do not hold a single party majority in congress, but do so in such a way as to minimize the cost of the coalition. This means partnering up with a small partner that is needed to secure a majority in congress but no more. This leaves the winning party at liberty to design and pass legislation in their interests without conceding too much to the much smaller, weaker coalition partner. However, this model does not provide a satisfying explain to the puzzling nature of the long term LDP-Komeito coalition. The LDP has been able to maintain a single party majority in both Upper and Lower houses since 2016. Despite this, the LDP has continued their partnership with Komeito since 2003.  
+    In this essay, I compare this peculiar case of Japan with Germany to identify the reasons in which this unique phenomenon may occur. In this comparison, Germany represents the control, being a parliamentary system close in design to Japan with similar electoral rules and no such long term alliance (besides the CDU/CSU alliance which is widely considered a single party in the academic literature and will be assumed to be such in this paper). Therefore, any difference between the German case and the Japanese case is considered as highlighting the idiosyncrasy of the LDP-Komeito alliance. I propose a new model of coalition formation which begins not at the end of elections but before the start of the election cycle. This model incorporates the costs and benefits of campaign collaboration and electoral strategy to explain the rationale behind this longstanding partnership.   
+  
+# The Puzzle  
+  
+Traditional political theory explains coalition formation as an effort made by parties which do not singly maintain a majority in parliament to gain enough seats to pass legislation within their interests. This theory, the Baron-Ferejohn model [@formal-methods], treats the end of each election cycle as the beginning of a bargaining game by parties. The party with the largest share of seats (winning party) searches for a party to form a coalition with and gain a majority in congress. Gaining a majority of seats is not the only criteria for coalition formulation, though, as partnerships with parties holding a large  share of seats would require greater concessions by the winning party with regards to the content of  legislation. In order for the winning party to earn the gratifying position of policy maker while minimizing the magnitude of concessions needed to appease their partnering party, the winning party would pair up with a party that is large enough to gain a majority of seats in congress but no larger than that. Extensions of this model include considerations of policy preferences and ideological positions by incorporate them into the cost of coalition formation (policy preferences directly influence the magnitude of concessions, while partnerships with ideologically opposed parties may alienate the winning party's support base). In all of these extensions, there is no reason for any party capable of maintaining a single-party majority in congress to form a coalition with another party. Confusingly, this counterintuitive case is what we observe in the LDP-Komeito coalition.   
+
+```{r}
+jp <- fread("shuugiin.csv")
+jp[is.na(jp)] <- 0
+jp[, 2:8] <- (jp[, 2:8] / jp$Total)
+jp$Total <- NULL
+jp <- jp %>%
+  mutate("_Others" = 1 - rowSums(.) + year) %>%
+  mutate(JCP = Kyousanto) %>%
+  select(-Kyousanto)
+```
+
+```{r}
+jp %>% 
+  pivot_longer(-year) %>%
+  mutate(party = name) %>%
+  ggplot(aes(x=year,y=value,fill=party,group=party))+
+  geom_bar(stat='identity',color='black',position='fill')+
+  scale_y_continuous(labels = scales::percent)+
+  theme_bw()+
+  theme(legend.position = 'bottom',
+        plot.title = element_text(hjust=0.5))+
+  xlab('year')+ylab('Seat Shares')+
+  labs(caption = "Data source: https://www.nhk.or.jp/senkyo/database/history/")+
+  scale_x_continuous("year", labels = as.character(jp$year), breaks = jp$year) +
+  geom_text(aes(label=if_else(value >= 0.03, paste0(sprintf("%1.1f", value * 100),"%"), "")),
+            position=position_stack(vjust=0.5), size= 2.5) +
+  ggtitle("Seat Shares in Japan's Lower House")
+```
+
+    Above is a bar chart showing the share of seats gained in Japan's Lower House elections since 1990. The LDP-Komeito coalition began in 1999 and persisted until this day with the exception of the period of time from 2009 when the Democratic Party was in power. We can see from the graph that in its inception, the partnership of LDP and Komeito was a necessary move for the LDP to hold a majority in congress. Furthermore, the small size of Komeito is congruent with the Baron-Ferejohn prediction regarding coalitions, and it is not hard to imagine that the costs of the LDP pairing with either the JCP or SDP (incurred from the parties' striking ideological and policy differences) outweigh the extra 2\% of leverage granted to Komeito.  
+    It's from 2005 that things deviate from what the Baron-Ferejohn framework predicts. In all Lower House elections after 2005 in which the LDP won, they won with a single party majority. This is not limited to the Lower House, as the LDP had also obtained a single party majority in the Upper House in 2016 and most recently 2022. Regardless, the LDP has continued its coalition with Komeito. When considering that the Komeito is largely pacifist and reserved on the issue of constitutional revision, a key policy interest of the LDP, this partnership is all the more bemusing [@komeito-kaiken]. Indeed, prior to their alignment, the two parties would frequently go head to head, even leading to organized negative campaigning by the LDP regarding the Komeito's religious background. In comparison, Germany's coalition formation can be explained as being for the most part in accordance with Baron-Ferejohn's theory of coalitions. 
+\newpage
+
+\begin{figure}[!h]
+\includegraphics[width=\linewidth]{bundestag.png}%
+\caption{Source: \url{https://commons.wikimedia.org/wiki/File:German_parliamentary_elections_diagram_de.svg}\textsuperscript{*}}
+\small\textsuperscript{*} See here for the reliability of well maintained Wikipedia articles: \url{https://www.economist.com/international/2021/01/09/wikipedia-is-20-and-its-reputation-has-never-been-higher}
+\end{figure}
+
+    The above figure shows the share of seats each party obtained in Germany's *bundestag* while the labels in the center indicate the subsequently formed coalitions. There is a trend for the winning party to partner with the FDP or Green Party, two small parties with weaker influence, to secure majority in congress. The fact that the CDU/CSU and SPD are both moderate parties means their coalitions with the centrist FDP are ideologically viable as well. The only noticeable exceptions are the *grand coalitions* in which the CDU/CSU and SPD join forces to form a coalition. This first occurred in 2005, when the SPD refused to form a broader coalition with the Green Party and Party of Democratic Socialism out of a strong aversion towards the latter party, due to fears that their controversial ties to communist forces would alienate support of the people. The 2013 grand coalition was formed on similar grounds. In 2017, CDU/CSU broke off a possible coalition with FDP in favor of a grand coalition due to disagreements on tax policy, interpretable as a punitive measure against the FDP's growing demands in their partnership. In 2017, again the CDU/CSU formed a grand coalition, but not without considerable negotiation efforts seeking for an alternative [@grand-coalition-2017].   
+    Even the grand coalition cases of Germany highlight that negotiations occur post election between parties, where they strategically form coalitions to further their own interests. But for a party singularly holding a majority stronghold in congress, what incentive is there to team up with a smaller party and conceding policy positions, legislative content, and important roles in government? 
+
+
+# Extending the Model: Cost of Collaboration  
+
+In order to explain this relationship, I extend the Baron-Ferejohn coalition formation model to account for the costs and benefits of campaign collaboration. In Japan and Germany's electoral systems, there exists a mixture of single-member-district and proportional representation voting. However, while in Japan the single-member-district comprises the majority of seats, in Germany the allocation of seats in the *bundestag* are decided primarily by the proportional representation portion. The significant implication of this is that in Germany, strategic and cooperative campaigning/nominations of candidates in single-member-districts is not as beneficial as it is in Japan. Especially in recent years, Japanese opposition parties have begun to strategize in elections by forming a unified opposition front and nominating only one candidate from the front in the single-member-districts so as not to split the vote. This indicates an open acknowledgement of the influence of vote splitting in single-member-districts and the subsequent wasted votes on election prospects. 
+    With this in mind, I propose an extended model of coalition formation; that which begins not at the end of the election cycle but at the beginning. Because in the Japanese electoral system multiparty cooperation in election campaigning and candidate nominations have considerable influence on the outcomes of the elections, it makes sense to think that parties make decisions regarding the formation of coalitions *before* the election cycle starts. In our specific case, the LDP and Komeito must have a long term agreement which dictates the way in which they campaign.  
+    Evidence supports this. Since 2003, the LDP have officially backed all candidates put forth by Komeito, and Komeito has officially backed most candidates put forth by the LDP. Further, the two parties have abstained from nominating candidates in the same electoral districts, leaving no room for split votes affecting their chances. This strategy, while effective, poses a problem: agreeing to withdraw candidates from specific districts may cost potential seats for both parties. We can treat this as the cost of electoral collaboration.  
+    This cost is the deciding factor in explaining the relationship of the LDP and Komeito. One study from 2003, which analyzed party votes by prefecture in the 2000 Lower House elections (previous to LDP and Komeito's strategic cooperation in elections), shows that there was an inverse correlation of -0.38 in the LDP and Komeito's performance in prefectures, smaller than other parties of similar scale excluding the JCP [@ldp-komeito-support]. What this implies is that the LDP and Komeito have vastly different support bases, and in districts with high LDP support Komeito support is low and vice-versa. It follows that the cost of cooperation is significantly low for the LDP and Komeito. With few districts in which the two parties both run as competitive candidates, withdrawing candidates in the districts where their partner is likely to win is a negligible cost. Conversely, if the LDP were to pair up with a party that is supported in the same districts as them, electoral cooperation will come with a steep price for at least one of the parties. 
+    Once considering the cost of collaboration, the LDP-Komeito alliance can be explained as the rational decision of two strategic actors. The lack of such long term alliances in Germany is due to the differences in the electoral systems which make similar electoral collaborations a fruitless exercise in Germany.  
+
+# Conclusion  
+
+    To summarize, the difference in support base of LDP and Komeito presents a clear strategic advantage in elections which warrants their collaboration. The framework I used to analyze this relationship has interesting implications. First, it shows that the LDP-Komeito partnership is not some unexplained anomaly but a rational decision that can be explained by extending existing theories on coalition formulation. Further, it highlights the unlikely mechanisms in electoral systems that lead to moderated coalitions and may have contributed to a well balanced cabinet in Japan, furthering checks and balances in a country with a historically dominant party. 
+\hfill (Word Count: 1771)
+
+
+# References  
+
+
+
